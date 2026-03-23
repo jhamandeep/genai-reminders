@@ -2,8 +2,9 @@ name: Telegram Study Reminder
 
 on:
   schedule:
-    - cron: '*/10 * * * *'   # runs every 10 minutes, 24/7, even when PC is off
-  workflow_dispatch:           # allows manual trigger from GitHub
+    - cron: '*/10 * * * *'   # every 10 min — sends reminder if session starts soon
+    - cron: '30 0 * * *'     # 6:00 AM IST (00:30 UTC) — sends full day agenda
+  workflow_dispatch:           # manual trigger — sends agenda immediately
 
 jobs:
   send-reminder:
@@ -19,8 +20,16 @@ jobs:
       - name: Install dependencies
         run: pip install requests pytz
 
-      - name: Run reminder check
+      - name: Run reminder (scheduled every 10 min)
+        if: github.event_name == 'schedule'
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: python telegram_reminder.py
+
+      - name: Send agenda (manual trigger = test)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python telegram_reminder.py agenda

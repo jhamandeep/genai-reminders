@@ -20,16 +20,30 @@ jobs:
       - name: Install dependencies
         run: pip install requests pytz
 
-      - name: Send agenda on manual trigger
+      - name: Telegram - Send agenda (manual trigger)
         if: github.event_name == 'workflow_dispatch'
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: python telegram_reminder.py agenda
 
-      - name: Check reminder on schedule
+      - name: Telegram - Check reminder (scheduled)
         if: github.event_name == 'schedule'
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: python telegram_reminder.py
+
+      - name: WhatsApp - Send agenda (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          WA_PHONE_ID: ${{ secrets.WA_PHONE_ID }}
+          WA_TOKEN: ${{ secrets.WA_TOKEN }}
+        run: python whatsapp_reminder.py agenda
+
+      - name: WhatsApp - Check reminder (scheduled)
+        if: github.event_name == 'schedule'
+        env:
+          WA_PHONE_ID: ${{ secrets.WA_PHONE_ID }}
+          WA_TOKEN: ${{ secrets.WA_TOKEN }}
+        run: python whatsapp_reminder.py

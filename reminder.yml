@@ -2,9 +2,9 @@ name: Telegram Study Reminder
 
 on:
   schedule:
-    - cron: '*/10 * * * *'   # every 10 min — sends reminder if session starts soon
-    - cron: '30 0 * * *'     # 6:00 AM IST (00:30 UTC) — sends full day agenda
-  workflow_dispatch:           # manual trigger — sends agenda immediately
+    - cron: '*/10 * * * *'
+    - cron: '30 0 * * *'
+  workflow_dispatch:
 
 jobs:
   send-reminder:
@@ -20,16 +20,30 @@ jobs:
       - name: Install dependencies
         run: pip install requests pytz
 
-      - name: Run reminder (scheduled every 10 min)
+      - name: Telegram - Send agenda (manual trigger)
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python telegram_reminder.py agenda
+
+      - name: Telegram - Check reminder (scheduled)
         if: github.event_name == 'schedule'
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
         run: python telegram_reminder.py
 
-      - name: Send agenda (manual trigger = test)
+      - name: WhatsApp - Send agenda (manual trigger)
         if: github.event_name == 'workflow_dispatch'
         env:
-          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
-          CHAT_ID: ${{ secrets.CHAT_ID }}
-        run: python telegram_reminder.py agenda
+          WA_PHONE_ID: ${{ secrets.WA_PHONE_ID }}
+          WA_TOKEN: ${{ secrets.WA_TOKEN }}
+        run: python whatsapp_reminder.py agenda
+
+      - name: WhatsApp - Check reminder (scheduled)
+        if: github.event_name == 'schedule'
+        env:
+          WA_PHONE_ID: ${{ secrets.WA_PHONE_ID }}
+          WA_TOKEN: ${{ secrets.WA_TOKEN }}
+        run: python whatsapp_reminder.py

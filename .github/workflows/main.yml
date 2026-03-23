@@ -3,6 +3,7 @@ name: Telegram Study Reminder
 on:
   schedule:
     - cron: '*/10 * * * *'
+    - cron: '30 0 * * *'
   workflow_dispatch:
 
 jobs:
@@ -19,7 +20,15 @@ jobs:
       - name: Install dependencies
         run: pip install requests pytz
 
-      - name: Run reminder check
+      - name: Send agenda on manual trigger
+        if: github.event_name == 'workflow_dispatch'
+        env:
+          BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
+          CHAT_ID: ${{ secrets.CHAT_ID }}
+        run: python telegram_reminder.py agenda
+
+      - name: Check reminder on schedule
+        if: github.event_name == 'schedule'
         env:
           BOT_TOKEN: ${{ secrets.BOT_TOKEN }}
           CHAT_ID: ${{ secrets.CHAT_ID }}
